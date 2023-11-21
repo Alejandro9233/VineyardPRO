@@ -27,7 +27,7 @@
         margin-top: 10%;
         display: flex;
         justify-content: center;  
-        width: fit-content;
+        width: 100%;
         height: 26px;
     }
     .logo{
@@ -155,6 +155,14 @@
                 <div class="homeLogo border-bottom">
                     <p class="logo">VINEYARD PRO</p>
                 </div>
+                <div>
+                    {% for user in users %}
+                    <div style="text-align: center; font-family: 'Poppins', sans-serif; color: #707EAE; margin-top: -300px;">
+                        <p> HI, {{ user['name'] }}!! </p>
+                        <p> WELCOME </p>
+                    </div>
+                    {% endfor %}
+                </div>
             </div> 
         </div>
         <div class="col dashBoard">
@@ -162,11 +170,11 @@
                 Dashboards / Smart Vineyard
             </p>
             <p class="indexTitle">
-                Smart Vineyard
+                {{ vineyards[0].name }}
             </p>
             <div class="row">
                 <div class="col" style="background: ightgray 50% ;">
-                    <img class="imgSetting" src="https://www.elcoto.com/wp-content/uploads/2022/01/EMS_3848-scaled.jpg" alt="vinedo">
+                    <img class="imgSetting" src="{{ vineyards[0].imgURL }}" alt="vinedo">
                 </div>
                 <div class="col">
                     <div class="featureLayout">
@@ -186,7 +194,7 @@
                         </div>
                         <div class="buttonLayout">
                             <div class="buttonCircle">
-                                <p class="indexTitle" style="margin-top: 6%; margin-left: 7%;">21°C</p>
+                                <p class="indexTitle" style="margin-top: 6%; margin-left: 7%;">{{temperature}}°</p>
                             </div>
                             <div class="tempBar">
                                 <div class="col" style="height: 100%; display: grid; place-items: center;">18°C</div>
