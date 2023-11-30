@@ -146,6 +146,14 @@
         background: #FFF;
         box-shadow: 0px 18px 40px 0px rgba(112, 144, 176, 0.12);
     }
+    .tempLocal{
+        border: solid 1px red;
+        display: flex;
+        align-items: flex-start;
+        border-radius: 13px;
+        background: #FFF;
+        box-shadow: 0px 18px 40px 0px rgba(112, 144, 176, 0.12);
+    }
 
 </style>
 <body class="container-fluid">
@@ -166,12 +174,26 @@
             </div> 
         </div>
         <div class="col dashBoard">
-            <p class="indexSubTitle">
-                Dashboards / Smart Vineyard
-            </p>
-            <p class="indexTitle">
-                {{ vineyards[0].name }}
-            </p>
+            <div class="row">
+                <div class="col">
+                    <p class="indexSubTitle">
+                        Dashboards / Smart Vineyard
+                    </p>
+                    <p class="indexTitle">
+                        {{ vineyards[0].name }}
+                    </p>
+                </div>
+                <div class="col">
+                    <div style="background: #FFF; box-shadow: 0px 18px 40px 0px rgba(112, 144, 176, 0.12); margin-top: 3%; margin-left: 60%; width: 30%; height: auto; border-radius: 13px;" >
+                        <div class="col" style="height: 100%; display: grid; place-items: center; color: #707EAE; font-family: DM Sans; font-size: 14px;">
+                            MONTERREY
+                        </div>
+                        <div class="col" style="height: 100%; display: grid; place-items: center; color: #2B3674; font-family: DM Sans; font-size: 24px;">
+                            {{temperature+2}}°C
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="row">
                 <div class="col" style="background: ightgray 50% ;">
                     <img class="imgSetting" src="{{ vineyards[0].imgURL }}" alt="vinedo">
@@ -194,7 +216,7 @@
                         </div>
                         <div class="buttonLayout">
                             <div class="buttonCircle">
-                                <p class="indexTitle" style="margin-top: 6%; margin-left: 7%;">{{temperature}}°</p>
+                                <p class="indexTitle" id="textTemp" type="number" style="margin-top: 6%; margin-left: 7%;"></p>
                             </div>
                             <div class="tempBar">
                                 <div class="col" style="height: 100%; display: grid; place-items: center;">18°C</div>
@@ -232,7 +254,7 @@
                 <div class="col">
                     <div class="featureLayout">
                         <p class="featureTitle">
-                            Light Controller
+                            Ceiling Controller
                         </p>
                         <div class="row" style="width: 40%; margin-top: -20px;">
                             <div class="col">
@@ -247,7 +269,7 @@
                         </div>
                         <div class="buttonLayout">
                             <a href="#" class="buttonCircleLight">
-                                <img style="width: 50px; height: auto;" src="https://upload.wikimedia.org/wikipedia/commons/6/64/Simple_light_bulb_graphic.png" alt="light bulb">
+                                <img style="width: 50px; height: auto;" src="https://cdn-icons-png.flaticon.com/512/3054/3054429.png" alt="light bulb">
                             </a>
                         </div>
                     </div>
@@ -257,42 +279,129 @@
         
     </div> 
 </body>
-<script>
+<script type="module">
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyCPTiXROt_IMWHbliq61Kjjj8kTcdfh28E",
+    authDomain: "ejemplofirebase-23e33.firebaseapp.com",
+    databaseURL: "https://ejemplofirebase-23e33-default-rtdb.firebaseio.com",
+    projectId: "ejemplofirebase-23e33",
+    storageBucket: "ejemplofirebase-23e33.appspot.com",
+    messagingSenderId: "1093936787640",
+    appId: "1:1093936787640:web:d8485aed929747ded0044d",
+    measurementId: "G-2QS0Q63DVF"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+
+  import {getDatabase, ref, get, set, child, update, remove}
+  from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"
+
+  const db = getDatabase()
+  console.log(db);
+
+  let textTemp = document.getElementById("textTemp");
+  let luz = 0;
+  let sprinklerButton;
+  let ceilingButton;
+
+  function FindData() {
+            const dbref = ref(db);
+
+            get(child(dbref, "Vineyard/01"))
+            .then((snapshot)=>{
+                if(snapshot.exists()){
+                    textTemp.innerHTML = snapshot.val().temperatura + "°";
+                    luz = snapshot.val().luz;
+                    sprinklerButton = snapshot.val().botonBomba;
+                    ceilingButton = snapshot.val().botonLuz;
+                } else {
+                    alert("No temperature data found");
+                }
+                if (sprinklerButton) {
+                    buttonWater.style.backgroundColor = "#707EAE";
+                    buttonWater.style.transform = "scale(1.1)";
+                } else {
+                    buttonWater.style.backgroundColor = "";
+                    buttonWater.style.transform = "";
+                }
+                if (ceilingButton) {
+                    buttonLight.style.backgroundColor = '#707EAE';
+                    buttonLight.style.transform = 'scale(1.1)';
+                } else {
+                    buttonLight.style.backgroundColor = '';
+                    buttonLight.style.transform = '';
+                }
+            })
+            .catch((error)=>{
+                alert(error)
+            })
+        }
+
+    function UpdateDataSprinkler(){
+        update(ref(db, "Vineyard/01"),{
+            botonBomba: !sprinklerButton,
+        })
+        .catch((error)=>{
+            alert(error);
+        });
+    }
+
+    function UpdateDataCeiing(){
+        update(ref(db, "Vineyard/01"),{
+            botonLuz: !ceilingButton,
+        })
+        .catch((error)=>{
+            alert(error);
+        });
+    }
+    
+    setInterval(FindData, 2000);
+    setInterval(() => {
+        console.log(luz, sprinklerButton, ceilingButton);
+    }, 1000);
+
 const buttonWater = document.querySelector('.buttonCircleWater');
-let isClickedWater = false;
 
 const buttonLight = document.querySelector('.buttonCircleLight');
-let isClickedLight = false;
 
 buttonWater.addEventListener('click', function() {
-  if (isClickedWater) {
+  if (sprinklerButton) {
     // Remove the effects
     buttonWater.style.backgroundColor = '';
     buttonWater.style.transform = '';
-    isClickedWater = false;
   } else {
     // Apply the effects
     buttonWater.style.backgroundColor = '#707EAE';
     buttonWater.style.transform = 'scale(1.1)';
-    isClickedWater = true;
   }
+
+  UpdateDataSprinkler();
 });
 
 buttonLight.addEventListener('click', function() {
-  if (isClickedLight) {
+  if (ceilingButton) {
     // Remove the effects
     buttonLight.style.backgroundColor = '';
     buttonLight.style.transform = '';
-    isClickedLight = false;
   } else {
     // Apply the effects
     buttonLight.style.backgroundColor = '#707EAE';
     buttonLight.style.transform = 'scale(1.1)';
-    isClickedLight = true;
   }
+
+  UpdateDataCeiing();
 });
-
-
 
 </script>
 </html>
